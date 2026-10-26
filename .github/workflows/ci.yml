@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: apk add --no-cache docker docker-compose curl git
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t reference .
+
+      - name: Run container
+        run: |
+          docker run -d -p 3000:3000 --name reference reference
+          sleep 5
+          curl -f http://localhost:3000 || (docker logs reference && exit 1)
+          docker stop reference
+          docker rm reference
+
+      - name: Run with Docker Compose
+        run: |
+          cp example.env .env
+          docker compose up --build -d
+          sleep 5
+          curl -f http://localhost:3000 || (docker compose logs && exit 1)
+          docker compose down
