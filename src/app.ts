@@ -4,7 +4,7 @@ const app = express();
 
 app.use(express.json());
 
-app.use('/', (request, response) => {
+app.use('/', (_, response) => {
   const welcome = 'Welcome to the Docker Reference API';
   response.send(welcome);
 });
